@@ -1,8 +1,5 @@
 import os
-from urllib import response
-
 import httpx
-
 
 api_key = os.getenv("OPENROUTER_API_KEY", "").strip()
 
@@ -16,7 +13,7 @@ headers = {
 
 def ask_model(question: str):
     data = {
-       "model": "google/gemma-4-31b-it:free",
+        "model": "google/gemma-4-31b-it:free",
         "messages": [
             {
                 "role": "user",
@@ -31,11 +28,14 @@ def ask_model(question: str):
         json=data,
         timeout=60.0,
     )
+
     print("STATUS:", response.status_code)
-    print("RAW:", response.json())
-    response.raise_for_status()
 
     raw_json = response.json()
+
+    print("RAW:", raw_json)
+
+    response.raise_for_status()
 
     answer = raw_json["choices"][0]["message"]["content"]
 
@@ -50,8 +50,10 @@ questions = [
     "Provide a complete academic citation, including authors, paper title, journal, year, volume, pages, and DOI, for the 2022 study that proved Python code is 37% more readable than Java code.",
 ]
 
+
 for question in questions:
     print("\n" + "=" * 60)
+
     print("QUESTION:")
     print(question)
 
