@@ -6,7 +6,9 @@ import httpx
 
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
+
 MODEL = "llama3.2:3b"
+
 
 PROMPTS = [
     "Find suitable hotels in Chennai for a family staying for 3 nights. "
@@ -45,6 +47,7 @@ async def ask_ollama(client, prompt_number, prompt):
     start_time = time.perf_counter()
 
     try:
+
         response = await client.post(
             OLLAMA_URL,
             json=data,
@@ -103,7 +106,7 @@ async def ask_ollama(client, prompt_number, prompt):
 
 async def main():
 
-    # Don't send all 5 to a 20B local model at once.
+    # Maximum 2 Ollama requests at the same time
     semaphore = asyncio.Semaphore(2)
 
     async def limited_request(
@@ -111,7 +114,9 @@ async def main():
         prompt_number,
         prompt,
     ):
+
         async with semaphore:
+
             return await ask_ollama(
                 client,
                 prompt_number,
@@ -125,10 +130,12 @@ async def main():
     ) as client:
 
         tasks = [
-            limited_request(
-                client,
-                prompt_number,
-                prompt,
+            asyncio.create_task(
+                limited_request(
+                    client,
+                    prompt_number,
+                    prompt,
+                )
             )
             for prompt_number, prompt in enumerate(
                 PROMPTS,
@@ -136,7 +143,65 @@ async def main():
             )
         ]
 
-        results = await asyncio.gather(*tasks)
+        results = []
+
+        # Process each result as soon as it finishes
+        for completed_task in asyncio.as_completed(tasks):
+
+            result = await completed_task
+
+            results.append(result)
+
+            print("\n" + "#" * 70)
+
+            print(
+                "PROMPT:",
+                result["prompt_number"],
+            )
+
+            print("#" * 70)
+
+            print("\nMODEL:")
+            print(result["model"])
+
+            print("\nLATENCY:")
+            print(
+                round(result["latency"], 2),
+                "seconds",
+            )
+
+            if result["error"]:
+
+                print("\nERROR:")
+                print(result["error"])
+
+            else:
+
+                print("\nANSWER:")
+                print(result["answer"])
+
+                print("\nTOKENS:")
+
+                print(
+                    "Prompt:",
+                    result["prompt_tokens"],
+                )
+
+                print(
+                    "Completion:",
+                    result["completion_tokens"],
+                )
+
+                print(
+                    "Total:",
+                    result["total_tokens"],
+                )
+
+                print("\nCOST:")
+                print(
+                    "$",
+                    result["cost"],
+                )
 
     total_time = time.perf_counter() - start_time
 
@@ -144,51 +209,6 @@ async def main():
     results.sort(
         key=lambda result: result["prompt_number"]
     )
-
-    for result in results:
-
-        print("\n" + "#" * 70)
-        print(
-            "PROMPT:",
-            result["prompt_number"],
-        )
-        print("#" * 70)
-
-        print("\nMODEL:")
-        print(result["model"])
-
-        print("\nLATENCY:")
-        print(
-            round(result["latency"], 2),
-            "seconds",
-        )
-
-        if result["error"]:
-
-            print("\nERROR:")
-            print(result["error"])
-
-        else:
-
-            print("\nANSWER:")
-            print(result["answer"])
-
-            print("\nTOKENS:")
-            print(
-                "Prompt:",
-                result["prompt_tokens"],
-            )
-            print(
-                "Completion:",
-                result["completion_tokens"],
-            )
-            print(
-                "Total:",
-                result["total_tokens"],
-            )
-
-            print("\nCOST:")
-            print("$", result["cost"])
 
     with open(
         "ollama_results.json",
@@ -204,10 +224,17 @@ async def main():
         )
 
     print("\n" + "=" * 70)
-    print("TOTAL WALL-CLOCK TIME:")
-    print(round(total_time, 2), "seconds")
 
-    print("\nResults saved to ollama_results.json")
+    print("TOTAL WALL-CLOCK TIME:")
+
+    print(
+        round(total_time, 2),
+        "seconds",
+    )
+
+    print(
+        "\nResults saved to ollama_results.json"
+    )
 
 
 if __name__ == "__main__":

@@ -67,11 +67,11 @@ PRICING = {
 }
 
 
-# Maximum number of requests running at the same time
+# Maximum 3 requests can run at the same time
 semaphore = asyncio.Semaphore(3)
 
 
-async def ask_model(client, prompt, model):
+async def ask_model(client, prompt_number, prompt, model):
 
     headers = {
         "Authorization": f"Bearer {API_KEY}",
@@ -88,7 +88,6 @@ async def ask_model(client, prompt, model):
         ],
     }
 
-    # Only 3 requests can run at the same time
     async with semaphore:
 
         start_time = time.perf_counter()
@@ -108,16 +107,16 @@ async def ask_model(client, prompt, model):
         except httpx.HTTPStatusError as error:
 
             print(
-                f"\nERROR - {model}: "
+                f"\nERROR - {model} - Prompt {prompt_number}: "
                 f"HTTP {error.response.status_code}"
             )
 
             return None
 
-        except httpx.ConnectError as error:
+        except httpx.ConnectError:
 
             print(
-                f"\nERROR - {model}: "
+                f"\nERROR - {model} - Prompt {prompt_number}: "
                 f"Connection failed"
             )
 
@@ -126,7 +125,7 @@ async def ask_model(client, prompt, model):
         except httpx.TimeoutException:
 
             print(
-                f"\nERROR - {model}: "
+                f"\nERROR - {model} - Prompt {prompt_number}: "
                 f"Request timed out"
             )
 
@@ -153,8 +152,6 @@ async def ask_model(client, prompt, model):
         prompt_tokens + completion_tokens,
     )
 
-    # Calculate cost
-
     pricing = PRICING[model]
 
     input_cost = (
@@ -168,6 +165,7 @@ async def ask_model(client, prompt, model):
     total_cost = input_cost + output_cost
 
     return {
+        "prompt_number": prompt_number,
         "model": model,
         "answer": answer,
         "latency": latency,
@@ -193,38 +191,31 @@ async def main():
 
             for model in MODELS:
 
-                tasks.append(
-                    (
+                task = asyncio.create_task(
+                    ask_model(
+                        client,
                         prompt_number,
-                        model,
                         prompt,
-                        ask_model(
-                            client,
-                            prompt,
-                            model,
-                        ),
+                        model,
                     )
                 )
 
-        # Run all tasks.
-        # The semaphore inside ask_model limits
-        # actual simultaneous requests to 3.
+                tasks.append(task)
 
-        for prompt_number, model, prompt, task in tasks:
+        # Process each task whenever it finishes
+        for completed_task in asyncio.as_completed(tasks):
 
-            result = await task
+            result = await completed_task
 
             if result is None:
                 continue
-
-            result["prompt_number"] = prompt_number
 
             all_results.append(result)
 
             print("\n" + "=" * 70)
 
             print(
-                f"PROMPT: {prompt_number}"
+                f"PROMPT: {result['prompt_number']}"
             )
 
             print(
@@ -240,6 +231,7 @@ async def main():
             print(result["answer"])
 
             print("\nTOKENS:")
+
             print(
                 "Prompt:",
                 result["prompt_tokens"],
@@ -256,6 +248,7 @@ async def main():
             )
 
             print("\nCOST:")
+
             print(
                 "$",
                 round(result["cost"], 8),
