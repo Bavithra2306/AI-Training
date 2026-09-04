@@ -1,0 +1,54 @@
+TASK 1.4 - Temperature and Context Window
+
+Experiment 1 - Temperature 0
+----------------------------
+Ran the same prompt 10 times with temperature 0.
+
+Observation:
+The outputs were not identical every time.
+Small differences in wording appeared between runs.
+
+Conclusion:
+Temperature 0 did not produce identical outputs in all 10 runs.
+
+
+Experiment 2 - Temperature 1.0
+------------------------------
+Ran the same prompt 10 times with temperature 1.0.
+
+Observation:
+The outputs also varied.
+There was some variation in wording and phrasing.
+
+
+Experiment 3 - max_tokens
+-------------------------
+Set max_tokens to 10.
+
+Observation:
+The response was cut off before completing the answer.
+It stopped in the middle of the generated text.
+
+Conclusion:
+max_tokens limits the maximum amount of output the model can generate.
+
+
+Experiment 4 - Context Window
+-----------------------------
+The model/provider reported a context window of approximately 262K tokens.
+
+Created a prompt containing 275,002 tokens.
+
+Result:
+The API returned HTTP 200 and accepted the request.
+No context-window error was produced.
+
+The API reported:
+prompt_tokens = 275018
+completion_tokens = 486
+total_tokens = 275504
+
+Conclusion:
+The 275K-token request was accepted by the provider, so this experiment
+did not produce a context-window error. The advertised/effective context
+limit may differ from the value we expected.

@@ -1,0 +1,33 @@
+Extract the customer information, order ID, date, problem, and requested solution from the following customer complaint.
+
+Return the extracted information as JSON.
+
+Example:
+
+Customer: John Smith
+Order ID: ORD-100
+Date: January 10, 2026
+Problem: The customer received a damaged product.
+Requested solution: The customer wants a replacement.
+
+Expected JSON:
+{
+  "customer": "John Smith",
+  "order_id": "ORD-100",
+  "date": "January 10, 2026",
+  "problem": "The customer received a damaged product.",
+  "requested_solution": "The customer wants a replacement."
+}
+
+Now extract the information from this complaint:
+
+<complaint>
+Customer: Ravi Kumar
+Order ID: ORD-4521
+Date: August 18, 2026
+
+I ordered a blue backpack from your website, but I received a black one. The product itself is fine, but the color is completely wrong. I need the correct blue backpack before August 25 because I am going on a trip. Please arrange a replacement and let me know if I need to return the wrong item.
+</complaint>
+
+Return the extracted information as JSON.
+Do not include any explanation or extra text.
