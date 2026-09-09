@@ -1,0 +1,8 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain FastAPI in one sentence."
+    }
+  ]
+}

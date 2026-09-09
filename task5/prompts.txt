@@ -1,0 +1,20 @@
+What is Python?
+What is an API?
+What is REST?
+What is JSON?
+What is HTTP?
+What is an HTTP request?
+What is an HTTP response?
+What is authentication?
+What is an API key?
+What is httpx in Python?
+What is asynchronous programming?
+What is concurrency?
+What is asyncio in Python?
+What is an LLM?
+What is a token in an LLM?
+What is a context window?
+What is temperature in an LLM?
+What is hallucination in AI?
+What is machine learning?
+What is generative AI?
