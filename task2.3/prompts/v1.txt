@@ -1,0 +1,7 @@
+Extract the customer information, order ID, date, problem, and requested solution from the following customer complaint.
+
+Customer: Ravi Kumar
+Order ID: ORD-4521
+Date: August 18, 2026
+
+I ordered a blue backpack from your website, but I received a black one. The product itself is fine, but the color is completely wrong. I need the correct blue backpack before August 25 because I am going on a trip. Please arrange a replacement and let me know if I need to return the wrong item.
